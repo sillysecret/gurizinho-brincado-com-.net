@@ -42,7 +42,7 @@ namespace gurizinho.Repository
             {
                 categorias = categorias.Where(categoria => categoria.Nome.ToLower().Contains(categoriaParams.Nome.ToLower()));
             }
-
+            //test
 
             return PagedList<Categoria>.ToPagedList(categorias, categoriaParams.PageNumber, categoriaParams.PageSize);
         }
