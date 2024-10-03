@@ -4,6 +4,7 @@ using gurizinho.Pagination;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol;
 using System;
+using X.PagedList;
 
 namespace gurizinho.Repository
 {
@@ -13,14 +14,16 @@ namespace gurizinho.Repository
         {
         }
 
-        public IEnumerable<Produto> GetProdutosPorCategoria(int id)
+        public async Task<IEnumerable<Produto>> GetProdutosPorCategoriaAsync(int id)
         {
-            return GetAll().Where(c => c.CategoriaID == id);
+            var produtos = await GetAllAsync();
+                
+            return produtos.Where(c => c.CategoriaID == id);
         }
 
-        public PagedList<Produto> GetProdutosFiltroPreco(FiltoDeProdutoPorPreco produtosFiltroParams)
+        public async Task<IPagedList<Produto>> GetProdutosFiltroPrecoAsync(FiltoDeProdutoPorPreco produtosFiltroParams)
         {
-            var produtos = GetAll().AsQueryable();
+            var produtos = await GetAllAsync();
 
             if (produtosFiltroParams.Preco.HasValue && !string.IsNullOrEmpty(produtosFiltroParams.PrecoCriterio))
             {
@@ -37,13 +40,13 @@ namespace gurizinho.Repository
                     produtos = produtos.Where(p => p.Preco == produtosFiltroParams.Preco.Value).OrderBy(p => p.Preco);
                 }
             }
-            var produtosFiltrados = PagedList<Produto>.ToPagedList(produtos, produtosFiltroParams.PageNumber,
-                                                                                                  produtosFiltroParams.PageSize);
+            var produtosFiltrados = await produtos.ToPagedListAsync(produtosFiltroParams.PageNumber, produtosFiltroParams.PageSize);
+
             return produtosFiltrados;
         }
 
 
-        public PagedList<Produto> GetProdutosPage(PageProdutoParameters produtosParameters)
+        public async Task<IPagedList<Produto>> GetProdutosPageAsync(PageProdutoParameters produtosParameters)
         {
             //IQueryable<T> é apropriado quando você deseja realizar consultas de forma
             //eficiente em uma fonte de dados que pode ser consultada diretamente, como
@@ -56,10 +59,11 @@ namespace gurizinho.Repository
             //de consultas SQL. Isso significa que, ao usar IEnumerable, você primeiro traz
             //todos os dados para a memória e, em seguida, aplica consultas, o que pode ser
             //menos eficiente para grandes conjuntos de dados.
-            var produtos = GetAll().OrderBy(p => p.ProdutoId).AsQueryable();
+            var produtos = await GetAllAsync();
 
-            var produtosOrdenados = PagedList<Produto>.ToPagedList(produtos,
-                       produtosParameters.PageNumber, produtosParameters.PageSize);
+            var orderProdutos = produtos.OrderBy(p => p.ProdutoId).AsQueryable();
+
+            var produtosOrdenados = await orderProdutos.ToPagedListAsync(produtosParameters.PageNumber, produtosParameters.PageSize);
 
             return produtosOrdenados;
         }

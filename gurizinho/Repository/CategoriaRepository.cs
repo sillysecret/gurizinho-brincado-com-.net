@@ -4,6 +4,7 @@ using gurizinho.Pagination;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using X.PagedList;
 
 namespace gurizinho.Repository
 {
@@ -13,7 +14,7 @@ namespace gurizinho.Repository
         {
         }
 
-        public PagedList<Categoria> GetCategoriaPage(PageCategoriaParameters categoriaParameters)
+        public async Task<IPagedList<Categoria>> GetCategoriaPageAsync(PageCategoriaParameters categoriaParameters)
         {
             //IQueryable<T> é apropriado quando você deseja realizar consultas de forma
             //eficiente em uma fonte de dados que pode ser consultada diretamente, como
@@ -26,25 +27,25 @@ namespace gurizinho.Repository
             //de consultas SQL. Isso significa que, ao usar IEnumerable, você primeiro traz
             //todos os dados para a memória e, em seguida, aplica consultas, o que pode ser
             //menos eficiente para grandes conjuntos de dados.
-            var categorias = GetAll().OrderBy(p => p.CategoriaId).AsQueryable();
+            var categorias = await GetAllAsync();
 
-            var categoriasOrdenados = PagedList<Categoria>.ToPagedList(categorias,
-                       categoriaParameters.PageNumber, categoriaParameters.PageSize);
+            var categoriasord = categorias.OrderBy(p => p.CategoriaId).AsQueryable();
+
+            var categoriasOrdenados = await categoriasord.ToPagedListAsync(categoriaParameters.PageNumber, categoriaParameters.PageSize);
 
             return categoriasOrdenados;
         }
 
-        public PagedList<Categoria> GetCategoriaPorNome(FiltroCategoriaPorNome categoriaParams)
+        public async Task<IPagedList<Categoria>> GetCategoriaPorNomeAsync(FiltroCategoriaPorNome categoriaParams)
         {
-            var categorias = GetAll().AsQueryable();
+            var categorias = await GetAllAsync();
 
             if (!string.IsNullOrEmpty(categoriaParams.Nome)) 
             {
                 categorias = categorias.Where(categoria => categoria.Nome.ToLower().Contains(categoriaParams.Nome.ToLower()));
             }
-            //test
 
-            return PagedList<Categoria>.ToPagedList(categorias, categoriaParams.PageNumber, categoriaParams.PageSize);
+            return await categorias.ToPagedListAsync(categoriaParams.PageNumber, categoriaParams.PageSize);
         }
     }
 }

@@ -31,9 +31,9 @@ namespace gurizinho.Repository.UFW
             }
         }
 
-        public void commit()
+        public async Task commitAsync()
         {
-            apiContext.SaveChanges();
+            await apiContext.SaveChangesAsync();
         }
         public void dispose() 
         {

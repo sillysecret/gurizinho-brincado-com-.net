@@ -1,13 +1,14 @@
 ﻿using gurizinho.models;
 using gurizinho.Pagination;
+using X.PagedList;
 
 namespace gurizinho.Repository
 {
     public interface IProdutoRepository : IRepository<Produto>
     {
-        IEnumerable<Produto> GetProdutosPorCategoria(int id);
-        PagedList<Produto> GetProdutosFiltroPreco(FiltoDeProdutoPorPreco produtosFiltroParams);
-        PagedList<Produto> GetProdutosPage(PageProdutoParameters produtosParams);
-        //IEnumerable<Produto> GetProdutosPage(PageProdutoParameters prm);
+        Task<IEnumerable<Produto>> GetProdutosPorCategoriaAsync(int id);
+        Task<IPagedList<Produto>> GetProdutosFiltroPrecoAsync(FiltoDeProdutoPorPreco produtosFiltroParams);
+        Task<IPagedList<Produto>> GetProdutosPageAsync(PageProdutoParameters produtosParams);
+        
     }
 }

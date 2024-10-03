@@ -1,13 +1,14 @@
 ﻿using gurizinho.models;
 using gurizinho.Pagination;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using X.PagedList;
 
 namespace gurizinho.Repository
 {
     public interface ICategoriaRepository : IRepository<Categoria>
     {
-        PagedList<Categoria> GetCategoriaPage(PageCategoriaParameters categoriaParams);
+        Task<IPagedList<Categoria>> GetCategoriaPageAsync(PageCategoriaParameters categoriaParams);
 
-        PagedList<Categoria> GetCategoriaPorNome(FiltroCategoriaPorNome categoriaParams);
+        Task<IPagedList<Categoria>> GetCategoriaPorNomeAsync(FiltroCategoriaPorNome categoriaParams);
     }
 }

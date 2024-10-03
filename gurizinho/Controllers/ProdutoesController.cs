@@ -31,8 +31,8 @@ namespace gurizinho.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Produto>> GetProdutos() {
-            var list = unitOfWork.ProdutoRepository.GetAll();
+        public async Task<ActionResult<IEnumerable<Produto>>> GetProdutos() {
+            var list = await unitOfWork.ProdutoRepository.GetAllAsync();
 
             if (list is null) { 
                 return NotFound("produtos não encontrados");
@@ -42,20 +42,21 @@ namespace gurizinho.Controllers
         }
 
         [HttpGet("pagination")]
-        public ActionResult<IEnumerable<Produto>> GetAllPages([FromQuery] PageProdutoParameters prm) {
+        public async Task<ActionResult<IEnumerable<Produto>>> GetAllPages([FromQuery] PageProdutoParameters prm) {
 
-            var produtos = unitOfWork.ProdutoRepository.GetProdutosPage(prm);
+            var produtos = await unitOfWork.ProdutoRepository.GetProdutosPageAsync(prm);
 
 
             var metadata = new
             {
-                produtos.TotalCount,
+                produtos.Count,
                 produtos.PageSize,
-                produtos.CurrentPage,
-                produtos.TotalPages,
-                produtos.HasNext,
-                produtos.HasPrevious
+                produtos.TotalItemCount,
+                produtos.PageCount,
+                produtos.HasNextPage,
+                produtos.HasPreviousPage
             };
+
 
             Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
 
@@ -65,23 +66,23 @@ namespace gurizinho.Controllers
         }
 
         [HttpGet("filter/preco")]
-        public ActionResult<IEnumerable<Produto>> GetByPrice([FromQuery] FiltoDeProdutoPorPreco prm) 
+        public async Task<ActionResult<IEnumerable<Produto>>> GetByPrice([FromQuery] FiltoDeProdutoPorPreco prm) 
         {
             if (prm is null) 
             {
                 return BadRequest("Não pode ser null");
             }
-            var produtos = unitOfWork.ProdutoRepository.GetProdutosFiltroPreco(prm);
+            var produtos = await unitOfWork.ProdutoRepository.GetProdutosFiltroPrecoAsync(prm);
 
 
             var metadata = new
             {
-                produtos.TotalCount,
+                produtos.Count,
                 produtos.PageSize,
-                produtos.CurrentPage,
-                produtos.TotalPages,
-                produtos.HasNext,
-                produtos.HasPrevious
+                produtos.TotalItemCount,
+                produtos.PageCount,
+                produtos.HasNextPage,
+                produtos.HasPreviousPage
             };
 
             Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
@@ -93,8 +94,8 @@ namespace gurizinho.Controllers
 
 
         [HttpGet("{id:int}", Name = "ObterProduto")]
-        public ActionResult<Produto> GetProduto(int id) {
-            var produto = unitOfWork.ProdutoRepository.Get(prod => prod.ProdutoId == id);
+        public async Task<ActionResult<Produto>> GetProduto(int id) {
+            var produto = await unitOfWork.ProdutoRepository.GetAsync(prod => prod.ProdutoId == id);
 
             if (produto is null)
             {
@@ -105,7 +106,7 @@ namespace gurizinho.Controllers
         }
 
         [HttpPost]
-        public ActionResult CreateProduto([FromBody] ProdutoCreateDTO newProduto) 
+        public async Task<ActionResult> CreateProduto([FromBody] ProdutoCreateDTO newProduto) 
         {
             if (newProduto is null)
                 return BadRequest();
@@ -114,30 +115,30 @@ namespace gurizinho.Controllers
             produto.DataCadastro = DateTime.Now;
             
             produto = unitOfWork.ProdutoRepository.Create(produto);
-            unitOfWork.commit();
+            await unitOfWork.commitAsync();
 
             return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId}, produto);
         }
 
 
         [HttpPut("{id:int}")]
-        public ActionResult UpdateProduto(int id, Produto newProduto)
+        public async Task<ActionResult> UpdateProduto(int id, Produto newProduto)
         {
 
             if(id != newProduto.ProdutoId)
                 return BadRequest();
 
             unitOfWork.ProdutoRepository.Update(newProduto);
-            unitOfWork.commit();
+            await unitOfWork.commitAsync();
 
 
             return Ok(newProduto);
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult<Produto> DeleteProduto(int id)
+        public async Task<ActionResult<Produto>> DeleteProduto(int id)
         {
-            var produto = unitOfWork.ProdutoRepository.Get(prod => prod.ProdutoId == id);
+            var produto = await unitOfWork.ProdutoRepository.GetAsync(prod => prod.ProdutoId == id);
 
             if (produto is null)
             {
@@ -145,7 +146,7 @@ namespace gurizinho.Controllers
             }
 
             produto = unitOfWork.ProdutoRepository.Delete(produto);
-            unitOfWork.commit();
+            await unitOfWork.commitAsync();
 
             return Ok(produto);
         }
